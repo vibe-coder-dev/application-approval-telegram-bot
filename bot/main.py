@@ -6,6 +6,7 @@ import asyncio
 import logging
 from typing import Optional
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 from .config import settings, storage
 from .database import database
 from .handlers import (
@@ -22,7 +23,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Create bot and dispatcher instances
-bot = Bot(token=settings.BOT_TOKEN)
+def create_bot() -> Bot:
+    """Create Bot instance, using SOCKS5 proxy if configured"""
+    if settings.PROXY_URL:
+        logger.info(f"Using SOCKS5 proxy: {settings.PROXY_URL}")
+        session = AiohttpSession(proxy=settings.PROXY_URL)
+        return Bot(token=settings.BOT_TOKEN, session=session)
+    return Bot(token=settings.BOT_TOKEN)
+
+bot = create_bot()
 dp = Dispatcher(storage=storage)
 
 
@@ -90,8 +99,6 @@ async def main():
     except Exception as e:
         logger.error(f"Error running bot: {e}")
         raise
-    finally:
-        await on_shutdown()
 
 
 if __name__ == "__main__":

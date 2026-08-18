@@ -69,9 +69,14 @@ class Database:
     
     async def close(self):
         """Close database connection"""
-        if self.engine:
+        if self.engine is None:
+            return
+        if self.is_sqlite:
+            self.engine.dispose()
+        else:
             await self.engine.dispose()
-            logger.info("Database connection closed")
+        self.engine = None
+        logger.info("Database connection closed")
     
     async def init_db(self):
         """Initialize database and create tables"""
