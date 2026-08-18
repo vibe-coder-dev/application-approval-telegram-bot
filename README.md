@@ -83,7 +83,7 @@ The bot is built with modern Python technologies and supports both SQLite (for d
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/application-bot.git
+   git clone https://github.com/vibe-coder-dev/application-bot.git
    cd application-bot
    ```
 
@@ -409,7 +409,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/your-repo/application-bot.git
+   git clone https://github.com/vibe-coder-dev/application-bot.git
    cd application-bot
    ```
 
