@@ -38,6 +38,15 @@
 </div>
 
 <div class="card">
+    <h2>Delete Application</h2>
+    <p class="muted">This will permanently delete the application, its status history and any attached file.</p>
+    <form method="POST" action="{{ url_for('application_delete', application_id=app.id) }}"
+          onsubmit="return confirm('Delete application #{{ app.id }}? This cannot be undone.');">
+        <button type="submit" class="btn btn-warning">Delete application #{{ app.id }}</button>
+    </form>
+</div>
+
+<div class="card">
     <h2>Status History</h2>
     {% if history %}
     <table>

@@ -225,6 +225,15 @@ def get_text(lang: str, key: str, **kwargs) -> str:
     return get_translation(lang, key, **kwargs)
 
 
+def get_button_texts(key: str) -> set:
+    """Get all translated labels for a keyboard button (lowercased)"""
+    return {
+        translations[lang].get(key, "").lower()
+        for lang in settings.AVAILABLE_LANGUAGES
+        if translations[lang].get(key)
+    }
+
+
 def load_translations_from_files():
     """Load translations from JSON files if they exist"""
     global translations

@@ -9,7 +9,7 @@ from ..config import settings
 from ..database import get_db
 from ..database.models import User
 from ..states.application import ApplicationState
-from ..utils.translations import get_translation
+from ..utils.translations import get_translation, get_button_texts
 from ..utils.keyboards import get_language_keyboard, get_main_keyboard
 from sqlalchemy import select
 import logging
@@ -53,6 +53,12 @@ async def lang_command(message: Message, state: FSMContext):
     
     # Set state for language selection
     await state.set_state(ApplicationState.waiting_for_language)
+
+
+@router.message(F.text.lower().in_(get_button_texts("btn_language")))
+async def lang_text(message: Message, state: FSMContext):
+    """Handle 'Change Language' button press from main menu"""
+    await lang_command(message, state)
 
 
 @router.callback_query(ApplicationState.waiting_for_language, F.data.startswith("lang:"))

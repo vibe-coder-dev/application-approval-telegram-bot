@@ -1,7 +1,7 @@
 """
 Database models for the application bot
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, Boolean, Index
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -70,6 +70,11 @@ class ServiceType(Base):
 class Application(Base):
     """Application model for storing client applications"""
     __tablename__ = "applications"
+    __table_args__ = (
+        Index("ix_applications_status", "status"),
+        Index("ix_applications_user_id", "user_id"),
+        Index("ix_applications_created_at", "created_at"),
+    )
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

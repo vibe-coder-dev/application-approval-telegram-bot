@@ -4,6 +4,9 @@ Flask web admin panel for managing applications and users
 import json
 import os
 import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import wraps
 from urllib.parse import urlencode
@@ -13,7 +16,7 @@ from flask import (
     Flask, abort, flash, redirect, render_template,
     request, session, url_for
 )
-from sqlalchemy import create_engine, desc, func, select
+from sqlalchemy import create_engine, desc, func, select, text
 from sqlalchemy.orm import selectinload, sessionmaker
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,6 +37,10 @@ STATUS_LABELS = {
     ApplicationStatusEnum.REJECTED: "Rejected",
 }
 
+# Simple in-memory TTL cache for dashboard stats
+_dashboard_cache = {}
+_DASHBOARD_TTL = 5  # seconds
+
 
 def _db_url() -> str:
     if settings.is_sqlite:
@@ -44,8 +51,42 @@ def _db_url() -> str:
     )
 
 
-engine = create_engine(_db_url(), echo=False)
+engine_kwargs = {"echo": False}
+if settings.is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs.update({
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
+    })
+engine = create_engine(_db_url(), **engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+
+
+def _create_indexes():
+    """Create missing DB indexes (idempotent, safe on existing databases)"""
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_applications_status "
+                "ON applications (status)"
+            ))
+            conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_applications_user_id "
+                "ON applications (user_id)"
+            ))
+            conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_applications_created_at "
+                "ON applications (created_at)"
+            ))
+            conn.commit()
+    except Exception as e:
+        app.logger.error(f"Error creating indexes: {e}")
+
+
+_create_indexes()
 
 
 def status_label(status) -> str:
@@ -62,8 +103,8 @@ def format_dt(value) -> str:
     return value.strftime("%Y-%m-%d %H:%M")
 
 
-def telegram_send(chat_id, text) -> bool:
-    """Send a Telegram message via the Bot API"""
+def _telegram_send_sync(chat_id, text) -> bool:
+    """Send a Telegram message via the Bot API (blocking, returns success)"""
     token = settings.BOT_TOKEN
     if not token:
         return False
@@ -76,6 +117,14 @@ def telegram_send(chat_id, text) -> bool:
     except Exception as e:
         app.logger.error(f"Telegram send to {chat_id} failed: {e}")
         return False
+
+
+def telegram_send(chat_id, text) -> bool:
+    """Send a Telegram message in a background thread (non-blocking)"""
+    threading.Thread(
+        target=_telegram_send_sync, args=(chat_id, text), daemon=True
+    ).start()
+    return True
 
 
 def login_required(f):
@@ -110,32 +159,59 @@ def logout():
 @app.route("/")
 @login_required
 def dashboard():
-    db = SessionLocal()
-    try:
-        total_users = db.scalar(select(func.count(User.id))) or 0
-        total_applications = db.scalar(select(func.count(Application.id))) or 0
+    now = time.monotonic()
+    cached = _dashboard_cache.get("stats")
+    if cached and now - cached[0] < _DASHBOARD_TTL:
+        stats, recent_apps = cached[1]
+    else:
+        db = SessionLocal()
+        try:
+            def _count(sub_query):
+                return sub_query.scalar_subquery()
 
-        status_counts = {}
-        for status in ApplicationStatusEnum:
-            count = db.scalar(
-                select(func.count(Application.id))
-                .where(Application.status == status)
-            ) or 0
-            status_counts[status] = count
+            users_sub = _count(select(func.count(User.id)))
+            apps_sub = _count(select(func.count(Application.id)))
 
-        recent_apps = db.execute(
-            select(Application)
-            .order_by(desc(Application.created_at))
-            .limit(5)
-        ).scalars().all()
-    finally:
-        db.close()
+            status_subs = {}
+            for status in ApplicationStatusEnum:
+                status_subs[status] = _count(
+                    select(func.count(Application.id))
+                    .where(Application.status == status)
+                )
+
+            row = db.execute(
+                select(
+                    users_sub.label("total_users"),
+                    apps_sub.label("total_applications"),
+                    *[status_subs[s].label(s.value) for s in ApplicationStatusEnum],
+                )
+            ).one()
+
+            stats = {
+                "total_users": row.total_users or 0,
+                "total_applications": row.total_applications or 0,
+                "status_counts": {
+                    status: getattr(row, status.value) or 0
+                    for status in ApplicationStatusEnum
+                },
+            }
+
+            recent_apps = db.execute(
+                select(Application)
+                .options(selectinload(Application.service_type))
+                .order_by(desc(Application.created_at))
+                .limit(5)
+            ).scalars().all()
+        finally:
+            db.close()
+
+        _dashboard_cache["stats"] = (now, (stats, recent_apps))
 
     return render_template(
         "dashboard.html",
-        total_users=total_users,
-        total_applications=total_applications,
-        status_counts=status_counts,
+        total_users=stats["total_users"],
+        total_applications=stats["total_applications"],
+        status_counts=stats["status_counts"],
         status_labels=STATUS_LABELS,
         recent_apps=recent_apps,
         status_label=status_label,
@@ -159,7 +235,10 @@ def applications():
             selected_status = ApplicationStatusEnum(status_filter)
             query = query.where(Application.status == selected_status)
 
-        total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+        count_query = select(func.count(Application.id))
+        if selected_status:
+            count_query = count_query.where(Application.status == selected_status)
+        total = db.scalar(count_query) or 0
         total_pages = max((total + per_page - 1) // per_page, 1)
         page = min(page, total_pages)
 
@@ -277,6 +356,56 @@ def application_change_status(application_id):
     return redirect(url_for("application_detail", application_id=application_id))
 
 
+@app.route("/applications/<int:application_id>/delete", methods=["POST"])
+@login_required
+def application_delete(application_id):
+    db = SessionLocal()
+    user_telegram_id = None
+    user_lang = "en"
+    try:
+        app_obj = db.execute(
+            select(Application)
+            .options(selectinload(Application.service_type), selectinload(Application.user))
+            .where(Application.id == application_id)
+        ).scalar_one_or_none()
+        if not app_obj:
+            abort(404)
+
+        if app_obj.user:
+            user_telegram_id = app_obj.user.telegram_id
+            user_lang = app_obj.user.language or "en"
+
+        # Delete attached file from disk if any
+        if app_obj.file_path:
+            try:
+                if os.path.exists(app_obj.file_path):
+                    os.remove(app_obj.file_path)
+            except OSError as e:
+                app.logger.error(f"Error deleting file {app_obj.file_path}: {e}")
+
+        # Delete status history rows (SQLite may not enforce FK cascade)
+        db.execute(
+            ApplicationStatus.__table__.delete()
+            .where(ApplicationStatus.application_id == application_id)
+        )
+        db.delete(app_obj)
+        db.commit()
+    finally:
+        db.close()
+
+    flash(f"Application #{application_id} deleted", "success")
+
+    if user_telegram_id:
+        message = (
+            f"🗑 Application #{application_id} was deleted by the admin"
+            if user_lang == "en"
+            else f"🗑 Заявка #{application_id} была удалена администратором"
+        )
+        telegram_send(user_telegram_id, message)
+
+    return redirect(url_for("applications"))
+
+
 @app.route("/users")
 @login_required
 def users():
@@ -286,13 +415,12 @@ def users():
             select(User).order_by(desc(User.created_at))
         ).scalars().all()
 
-        app_counts = {}
-        for user in user_list:
-            count = db.scalar(
-                select(func.count(Application.id))
-                .where(Application.user_id == user.id)
-            ) or 0
-            app_counts[user.id] = count
+        # Single GROUP BY query instead of N+1 per-user counts
+        count_rows = db.execute(
+            select(Application.user_id, func.count(Application.id).label("cnt"))
+            .group_by(Application.user_id)
+        ).all()
+        app_counts = {user_id: cnt for user_id, cnt in count_rows}
     finally:
         db.close()
 
@@ -300,8 +428,53 @@ def users():
         "users.html",
         users=user_list,
         app_counts=app_counts,
+        session_admin_id=settings.ADMIN_ID,
         format_dt=format_dt,
     )
+
+
+@app.route("/users/<int:user_id>/delete", methods=["POST"])
+@login_required
+def user_delete(user_id):
+    db = SessionLocal()
+    try:
+        user_obj = db.execute(
+            select(User)
+            .options(selectinload(User.applications))
+            .where(User.id == user_id)
+        ).scalar_one_or_none()
+        if not user_obj:
+            abort(404)
+
+        if user_obj.telegram_id == settings.ADMIN_ID:
+            flash("Cannot delete the admin user", "error")
+            return redirect(url_for("users"))
+
+        # Delete attached files of the user's applications
+        for app_obj in user_obj.applications:
+            if app_obj.file_path:
+                try:
+                    if os.path.exists(app_obj.file_path):
+                        os.remove(app_obj.file_path)
+                except OSError as e:
+                    app.logger.error(f"Error deleting file {app_obj.file_path}: {e}")
+
+        # Delete status history rows for all applications
+        app_ids = [a.id for a in user_obj.applications]
+        if app_ids:
+            db.execute(
+                ApplicationStatus.__table__.delete()
+                .where(ApplicationStatus.application_id.in_(app_ids))
+            )
+
+        # Deleting the user cascades to their applications via the ORM relationship
+        db.delete(user_obj)
+        db.commit()
+    finally:
+        db.close()
+
+    flash(f"User #{user_id} deleted", "success")
+    return redirect(url_for("users"))
 
 
 @app.route("/broadcast", methods=["POST"])
@@ -321,9 +494,11 @@ def broadcast():
         db.close()
 
     sent = 0
-    for chat_id in telegram_ids:
-        if telegram_send(chat_id, text):
-            sent += 1
+    if telegram_ids:
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            sent = sum(pool.map(
+                lambda chat_id: _telegram_send_sync(chat_id, text), telegram_ids
+            ))
 
     flash(f"Broadcast sent to {sent} of {len(telegram_ids)} users", "success")
     return redirect(url_for("dashboard"))

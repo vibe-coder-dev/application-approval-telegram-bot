@@ -9,14 +9,14 @@ from ..config import settings
 from ..database import get_db
 from ..database.models import User, Application, ServiceType, ApplicationStatus, ApplicationStatusEnum
 from ..states.application import ApplicationState
-from ..utils.translations import get_translation
+from ..utils.translations import get_translation, get_button_texts
 from ..utils.keyboards import (
     get_service_type_keyboard, get_confirmation_keyboard, 
     get_file_type_keyboard, get_main_keyboard, get_pagination_keyboard
 )
 from ..utils.file_handler import save_file, delete_file
 from ..utils.validators import validate_title, validate_description
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, or_
 from datetime import datetime
 import logging
 
@@ -60,6 +60,12 @@ async def new_application_command(message: Message, state: FSMContext):
         get_translation(lang, "application_start"),
         reply_markup=keyboard
     )
+
+
+@router.message(F.text.lower().in_(get_button_texts("btn_new_application")))
+async def new_application_text(message: Message, state: FSMContext):
+    """Handle 'New Application' button press from main menu"""
+    await new_application_command(message, state)
 
 
 @router.callback_query(ApplicationState.waiting_for_service_type, F.data.startswith("service_type:"))
@@ -285,14 +291,18 @@ async def show_confirmation(message: Message, state: FSMContext):
     # Get service type ID from database
     service_type_id = None
     async for db in get_db():
+        service_type_filter = or_(
+            ServiceType.name_en == service_type_name,
+            ServiceType.name_ru == service_type_name
+        )
         if settings.is_sqlite:
             result = db.execute(
-                select(ServiceType).where(ServiceType.name_en == service_type_name)
+                select(ServiceType).where(service_type_filter)
             )
             service_type = result.scalar_one_or_none()
         else:
             result = await db.execute(
-                select(ServiceType).where(ServiceType.name_en == service_type_name)
+                select(ServiceType).where(service_type_filter)
             )
             service_type = result.scalar_one_or_none()
         
@@ -482,6 +492,12 @@ async def my_applications_command(message: Message):
     
     keyboard = get_main_keyboard(lang)
     await message.answer(text, reply_markup=keyboard)
+
+
+@router.message(F.text.lower().in_(get_button_texts("btn_view_applications")))
+async def my_applications_text(message: Message):
+    """Handle 'My Applications' button press from main menu"""
+    await my_applications_command(message)
 
 
 @router.callback_query(F.data.startswith("view_application:"))

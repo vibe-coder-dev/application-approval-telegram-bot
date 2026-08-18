@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from ..config import settings
 from ..database import get_db
 from ..database.models import User
-from ..utils.translations import get_translation
+from ..utils.translations import get_translation, get_button_texts
 from ..utils.keyboards import get_main_keyboard
 import logging
 
@@ -25,6 +25,12 @@ async def help_command(message: Message):
     
     help_text = get_translation(lang, "help")
     await message.answer(help_text)
+
+
+@router.message(F.text.lower().in_(get_button_texts("btn_help")))
+async def help_text(message: Message):
+    """Handle 'Help' button press from main menu"""
+    await help_command(message)
 
 
 @router.message(Command("start"))

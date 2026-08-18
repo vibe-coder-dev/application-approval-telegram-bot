@@ -18,6 +18,7 @@
                 <th>Applications</th>
                 <th>Language</th>
                 <th>Registered</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -33,6 +34,16 @@
                 <td>{{ app_counts.get(user.id, 0) }}</td>
                 <td>{{ user.language or '-' }}</td>
                 <td>{{ format_dt(user.created_at) }}</td>
+                <td>
+                    {% if user.telegram_id != session_admin_id %}
+                    <form method="POST" action="{{ url_for('user_delete', user_id=user.id) }}"
+                          onsubmit="return confirm('Delete user #{{ user.id }} ({{ user.username or user.first_name or 'user' }})? This will permanently delete all their applications. This cannot be undone.');">
+                        <button type="submit" class="btn btn-warning">Delete</button>
+                    </form>
+                    {% else %}
+                    <span class="muted">Admin</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
