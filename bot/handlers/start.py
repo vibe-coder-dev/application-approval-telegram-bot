@@ -22,6 +22,7 @@ router = Router()
 async def start_handler(message: Message):
     """Handle /start command"""
     user = message.from_user
+    logger.info(f"Received /start from user_id={user.id}, username={user.username}")
     lang = user.language_code or settings.DEFAULT_LANGUAGE
     if lang not in settings.AVAILABLE_LANGUAGES:
         lang = settings.DEFAULT_LANGUAGE
@@ -41,6 +42,8 @@ async def start_handler(message: Message):
             )
             existing_user = result.scalar_one_or_none()
         
+        role = UserRole.ADMIN if user.id == settings.ADMIN_ID else UserRole.USER
+        
         if not existing_user:
             # Create new user
             new_user = User(
@@ -48,7 +51,8 @@ async def start_handler(message: Message):
                 username=user.username,
                 first_name=user.first_name,
                 last_name=user.last_name,
-                language=lang
+                language=lang,
+                role=role
             )
             
             if settings.is_sqlite:
@@ -66,6 +70,8 @@ async def start_handler(message: Message):
             existing_user.username = user.username
             existing_user.first_name = user.first_name
             existing_user.last_name = user.last_name
+            if existing_user.role != role:
+                existing_user.role = role
             
             if settings.is_sqlite:
                 db.commit()
