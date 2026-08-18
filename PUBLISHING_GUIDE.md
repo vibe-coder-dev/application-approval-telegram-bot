@@ -49,7 +49,7 @@ git add .
 git commit -m "Initial commit: Complete Application Bot with all features"
 
 # Add remote repository
-git remote add origin https://github.com/your-username/application-bot.git
+git remote add origin https://github.com/vibe-coder-dev/application-bot.git
 
 # Push to GitHub
 git branch -M main
