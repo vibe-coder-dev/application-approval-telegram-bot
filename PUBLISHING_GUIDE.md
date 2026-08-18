@@ -82,14 +82,12 @@ application-bot/
 │   │   ├── start.py         # Start command handler
 │   │   ├── registration.py  # User registration handlers
 │   │   ├── application.py   # Application creation handlers
-│   │   ├── admin.py         # Admin handlers
 │   │   ├── language.py      # Language switching handlers
 │   │   └── common.py        # Common handlers
 │   ├── states/
 │   │   ├── __init__.py
 │   │   ├── application.py   # Application FSM states
-│   │   ├── registration.py  # Registration FSM states
-│   │   └── admin.py         # Admin FSM states
+│   │   └── registration.py  # Registration FSM states
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── translations.py  # Multilingual support
@@ -97,6 +95,11 @@ application-bot/
 │   │   ├── file_handler.py  # File upload handling
 │   │   └── validators.py    # Input validation
 │   └── main.py              # Main entry point
+├── webadmin/
+│   ├── __init__.py
+│   ├── app.py               # Flask web admin panel
+│   ├── templates/           # HTML templates
+│   └── static/              # Static assets (CSS)
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py         # Pytest configuration
@@ -129,7 +132,8 @@ application-bot/
 ├── LICENSE                  # MIT License
 ├── CODE_OF_CONDUCT.md       # Code of conduct
 ├── CONTRIBUTING.md          # Contribution guidelines
-├── run.py                   # Alternative entry point
+├── run.py                   # Bot entry point
+├── run_admin.py             # Web admin panel entry point
 └── __init__.py              # Package initialization
 ```
 
@@ -141,7 +145,7 @@ application-bot/
 - **Documentation Files**: 8
 - **Configuration Files**: 8
 - **Total Lines of Code**: ~2000+
-- **Test Coverage**: 63 tests covering core functionality
+- **Test Coverage**: 60 tests covering core functionality
 
 ## 🎯 Features Implemented
 
@@ -152,12 +156,15 @@ application-bot/
 - ✅ File/photo upload support
 - ✅ Application submission to admin
 - ✅ Application status management
+- ✅ Web admin panel (Flask) at `http://localhost:10000`
+- ✅ Broadcast messages from the web admin panel
 - ✅ Data persistence (SQLite/PostgreSQL)
 - ✅ Multilingual support (English/Russian)
 - ✅ Language switching with `/lang` command
 
 ### Technical Features
 - ✅ Aiogram 3 framework
+- ✅ Flask web admin panel
 - ✅ SQLAlchemy 2.0 ORM
 - ✅ Async database operations
 - ✅ Docker containerization

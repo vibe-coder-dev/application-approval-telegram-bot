@@ -11,7 +11,7 @@ from .config import settings, storage
 from .database import database
 from .handlers import (
     start_router, registration_router, application_router,
-    admin_router, language_router, common_router
+    language_router, common_router
 )
 from .utils.translations import load_translations
 
@@ -51,7 +51,6 @@ async def setup_routers():
     dp.include_router(start_router)
     dp.include_router(registration_router)
     dp.include_router(application_router)
-    dp.include_router(admin_router)
     dp.include_router(language_router)
     dp.include_router(common_router)
     

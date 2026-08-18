@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Bot settings
     BOT_TOKEN: str = Field(..., description="Telegram Bot Token")
     ADMIN_ID: int = Field(..., description="Admin user ID")
+
+    # Web admin panel settings
+    ADMIN_PASSWORD: str = Field("admin", description="Web admin panel password")
+    SECRET_KEY: str = Field("change-me", description="Flask session secret key")
     
     # Database settings
     DB_TYPE: str = Field("postgresql", description="Database type: sqlite or postgresql")

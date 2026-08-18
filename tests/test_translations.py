@@ -44,7 +44,7 @@ class TestTranslations:
             "welcome", "help", "language_changed", "select_language",
             "registration_start", "registration_success", "application_start",
             "application_submitted", "status_new", "status_in_progress",
-            "status_completed", "status_rejected", "admin_panel",
+            "status_completed", "status_rejected",
             "btn_yes", "btn_no", "btn_back", "btn_cancel"
         ]
         

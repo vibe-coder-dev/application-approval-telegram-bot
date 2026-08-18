@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Application #{{ app.id }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('applications') }}">&larr; Back to applications</a></p>
+
+<div class="card">
+    <h1>Application #{{ app.id }}</h1>
+    <table>
+        <tbody>
+            <tr><th>Title</th><td>{{ app.title }}</td></tr>
+            <tr><th>Service Type</th><td>{{ app.service_type.get_name('en') if app.service_type else '-' }}</td></tr>
+            <tr><th>Description</th><td>{{ app.description or '-' }}</td></tr>
+            <tr><th>Status</th><td><span class="badge">{{ status_label(app.status) }}</span></td></tr>
+            <tr><th>Priority</th><td>{{ app.priority or 0 }}</td></tr>
+            <tr><th>Created</th><td>{{ format_dt(app.created_at) }}</td></tr>
+            <tr><th>Updated</th><td>{{ format_dt(app.updated_at) }}</td></tr>
+            <tr><th>Completed</th><td>{{ format_dt(app.completed_at) }}</td></tr>
+            {% if app.file_name %}
+            <tr><th>Attachment</th><td>{{ app.file_name }} ({{ app.file_type or 'file' }})</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Change Status</h2>
+    <form method="POST" action="{{ url_for('application_change_status', application_id=app.id) }}">
+        <label for="status">New status:</label>
+        <select name="status" id="status" required>
+            {% for status, label in status_labels.items() %}
+            <option value="{{ status.value }}" {% if app.status == status %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <label for="notes">Notes (optional):</label>
+        <textarea name="notes" id="notes" rows="3"></textarea>
+        <button type="submit" class="btn btn-primary">Update status</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Status History</h2>
+    {% if history %}
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Changed By</th>
+                <th>Notes</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in history %}
+            <tr>
+                <td><span class="badge">{{ status_label(h.status) }}</span></td>
+                <td>{{ h.changed_by or '-' }}</td>
+                <td>{{ h.notes or '-' }}</td>
+                <td>{{ format_dt(h.created_at) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No status history.</p>
+    {% endif %}
+</div>
+{% endblock %}

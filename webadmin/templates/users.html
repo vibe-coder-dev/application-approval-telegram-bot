@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1>Users</h1>
+
+<div class="card">
+    {% if users %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Telegram ID</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Applications</th>
+                <th>Language</th>
+                <th>Registered</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ (user.first_name or '') + ' ' + (user.last_name or '') }}</td>
+                <td>@{{ user.username or '-' }}</td>
+                <td>{{ user.telegram_id }}</td>
+                <td>{{ user.email or '-' }}</td>
+                <td>{{ user.phone or '-' }}</td>
+                <td>{{ user.role.value }}</td>
+                <td>{{ app_counts.get(user.id, 0) }}</td>
+                <td>{{ user.language or '-' }}</td>
+                <td>{{ format_dt(user.created_at) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No users yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

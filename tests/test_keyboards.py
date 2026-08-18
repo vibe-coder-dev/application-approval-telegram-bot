@@ -25,18 +25,6 @@ class TestMainKeyboard:
         assert keyboard.resize_keyboard is True
 
 
-class TestAdminKeyboard:
-    """Test admin keyboard"""
-    
-    def test_get_admin_keyboard(self):
-        """Test admin keyboard"""
-        from bot.utils.keyboards import get_admin_keyboard
-        
-        keyboard = get_admin_keyboard("en")
-        assert isinstance(keyboard, ReplyKeyboardMarkup)
-        assert keyboard.resize_keyboard is True
-
-
 class TestServiceTypeKeyboard:
     """Test service type keyboard"""
     
@@ -52,24 +40,6 @@ class TestServiceTypeKeyboard:
         from bot.utils.keyboards import get_service_type_keyboard
         
         keyboard = get_service_type_keyboard("ru")
-        assert isinstance(keyboard, InlineKeyboardMarkup)
-
-
-class TestStatusKeyboard:
-    """Test status keyboard"""
-    
-    def test_get_status_keyboard_english(self):
-        """Test status keyboard in English"""
-        from bot.utils.keyboards import get_status_keyboard
-        
-        keyboard = get_status_keyboard("en")
-        assert isinstance(keyboard, InlineKeyboardMarkup)
-    
-    def test_get_status_keyboard_russian(self):
-        """Test status keyboard in Russian"""
-        from bot.utils.keyboards import get_status_keyboard
-        
-        keyboard = get_status_keyboard("ru")
         assert isinstance(keyboard, InlineKeyboardMarkup)
 
 

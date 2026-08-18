@@ -35,8 +35,9 @@ RUN chown -R 1000:1000 /app/data /app/uploads
 # Switch to non-root user
 USER 1000
 
-# Expose port (if needed for webhooks)
+# Expose ports (bot webhooks + web admin panel)
 EXPOSE 8080
+EXPOSE 10000
 
 # Set default command
 CMD ["python", "-m", "bot.main"]

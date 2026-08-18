@@ -5,7 +5,6 @@ from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardBut
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from typing import List, Dict, Any, Optional
 from ..config.settings import settings
-from ..database.models import ApplicationStatusEnum
 from .translations import get_translation
 
 
@@ -28,26 +27,6 @@ def get_main_keyboard(lang: str = "en") -> ReplyKeyboardMarkup:
     return builder.as_markup(resize_keyboard=True)
 
 
-def get_admin_keyboard(lang: str = "en") -> ReplyKeyboardMarkup:
-    """Get admin menu keyboard"""
-    builder = ReplyKeyboardBuilder()
-    
-    btn_applications = get_translation(lang, "btn_view_applications")
-    btn_users = "Users"
-    btn_set_status = "Set Status"
-    btn_broadcast = "Broadcast"
-    btn_back = get_translation(lang, "btn_back")
-    
-    builder.add(KeyboardButton(text=btn_applications))
-    builder.add(KeyboardButton(text=btn_users))
-    builder.add(KeyboardButton(text=btn_set_status))
-    builder.add(KeyboardButton(text=btn_broadcast))
-    builder.add(KeyboardButton(text=btn_back))
-    
-    builder.adjust(2)
-    return builder.as_markup(resize_keyboard=True)
-
-
 def get_service_type_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     """Get keyboard with service types"""
     builder = InlineKeyboardBuilder()
@@ -58,43 +37,6 @@ def get_service_type_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
         builder.add(InlineKeyboardButton(
             text=service_type,
             callback_data=f"service_type:{service_type}"
-        ))
-    
-    # Add cancel button
-    btn_cancel = get_translation(lang, "btn_cancel")
-    builder.add(InlineKeyboardButton(
-        text=btn_cancel,
-        callback_data="cancel"
-    ))
-    
-    builder.adjust(2)
-    return builder.as_markup()
-
-
-def get_status_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
-    """Get keyboard with application statuses"""
-    builder = InlineKeyboardBuilder()
-    
-    statuses = settings.APPLICATION_STATUSES.get(lang, settings.APPLICATION_STATUSES["en"])
-    
-    for status in statuses:
-        # Map display name to enum value
-        status_enum_map = {
-            "New": ApplicationStatusEnum.NEW,
-            "In Progress": ApplicationStatusEnum.IN_PROGRESS,
-            "Completed": ApplicationStatusEnum.COMPLETED,
-            "Rejected": ApplicationStatusEnum.REJECTED,
-            "Новая": ApplicationStatusEnum.NEW,
-            "В обработке": ApplicationStatusEnum.IN_PROGRESS,
-            "Завершена": ApplicationStatusEnum.COMPLETED,
-            "Отклонена": ApplicationStatusEnum.REJECTED,
-        }
-        
-        enum_value = status_enum_map.get(status, ApplicationStatusEnum.NEW)
-        
-        builder.add(InlineKeyboardButton(
-            text=status,
-            callback_data=f"status:{enum_value.value}"
         ))
     
     # Add cancel button

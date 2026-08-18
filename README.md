@@ -13,7 +13,7 @@
   - [Configuration](#configuration)
 - [Usage](#usage)
   - [User Commands](#user-commands)
-  - [Admin Commands](#admin-commands)
+  - [Web Admin Panel](#web-admin-panel)
 - [Project Structure](#project-structure)
 - [Docker](#docker)
 - [Development](#development)
@@ -41,6 +41,7 @@ The bot is built with modern Python technologies and supports both SQLite (for d
 - **Multilingual Support**: Switch between English and Russian with `/lang` command
 
 ### Admin Features
+- **Web Admin Panel**: Flask-based admin panel at `http://localhost:10000`
 - **Application Management**: View all applications and change their status
 - **User Management**: View registered users
 - **Status Updates**: Change application status with optional notes
@@ -60,6 +61,7 @@ The bot is built with modern Python technologies and supports both SQLite (for d
 
 - **Python 3.11+**
 - **Aiogram 3.4** - Modern Telegram Bot Framework
+- **Flask** - Web admin panel framework
 - **SQLAlchemy 2.0** - ORM for database operations
 - **PostgreSQL** - Production database
 - **SQLite** - Development database
@@ -96,6 +98,7 @@ The bot is built with modern Python technologies and supports both SQLite (for d
    ```env
    BOT_TOKEN=your_telegram_bot_token
    ADMIN_ID=your_telegram_user_id
+   ADMIN_PASSWORD=your_admin_panel_password
    DB_TYPE=postgresql
    POSTGRES_PASSWORD=your_password
    ```
@@ -106,6 +109,8 @@ The bot is built with modern Python technologies and supports both SQLite (for d
    ```
 
 5. The bot should now be running and ready to use!
+
+6. Open the web admin panel at `http://localhost:10000` and log in with `ADMIN_PASSWORD`.
 
 #### Local Development
 
@@ -129,6 +134,12 @@ The bot is built with modern Python technologies and supports both SQLite (for d
    python -m bot.main
    ```
 
+6. Run the web admin panel (in a separate terminal):
+   ```bash
+   python run_admin.py
+   ```
+   The admin panel is then available at `http://localhost:10000`.
+
 ---
 
 ## ⚙️ Configuration
@@ -139,6 +150,8 @@ The bot is built with modern Python technologies and supports both SQLite (for d
 |----------|-------------|---------|
 | `BOT_TOKEN` | Telegram Bot Token (required) | - |
 | `ADMIN_ID` | Admin Telegram User ID (required) | - |
+| `ADMIN_PASSWORD` | Web admin panel password | `admin` |
+| `SECRET_KEY` | Flask session secret key | `change-me` |
 | `DB_TYPE` | Database type: `sqlite` or `postgresql` | `postgresql` |
 | `POSTGRES_HOST` | PostgreSQL host | `localhost` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
@@ -173,15 +186,16 @@ Application statuses are managed through the `ApplicationStatusEnum` and can be 
 | `/my_applications` | View your submitted applications |
 | `/lang` | Change language (English/Russian) |
 
-### Admin Commands
+### Web Admin Panel
 
-| Command | Description |
-|---------|-------------|
-| `/admin` | Show admin panel |
-| `/applications` | View all applications |
+The admin panel is a Flask web application that runs at `http://localhost:10000`. It is protected by a password (see `ADMIN_PASSWORD` in `.env`).
+
+| Page | Description |
+|------|-------------|
+| Dashboard | User/application statistics, status counts and broadcast form |
+| `/applications` | View all applications, filter by status |
+| `/applications/<id>` | Application details, status history and status change |
 | `/users` | View all registered users |
-| `/set_status` | Change application status |
-| `/broadcast` | Send message to all users |
 
 ### Application Creation Flow
 
@@ -196,11 +210,11 @@ Application statuses are managed through the `ApplicationStatusEnum` and can be 
 
 ### Status Management
 
-Admins can change application status using `/set_status` command:
-1. Enter application ID
-2. Select new status from available options
+Admins change application status through the web admin panel at `http://localhost:10000/applications/<id>`:
+1. Open the application detail page
+2. Select the new status from the dropdown
 3. Add optional notes
-4. User is notified about status change
+4. Save; the user is notified about the status change via Telegram
 
 ---
 
@@ -223,14 +237,12 @@ application/
 │   │   ├── start.py         # Start command handler
 │   │   ├── registration.py  # User registration handlers
 │   │   ├── application.py   # Application creation handlers
-│   │   ├── admin.py         # Admin handlers
 │   │   ├── language.py      # Language switching handlers
 │   │   └── common.py        # Common handlers
 │   ├── states/
 │   │   ├── __init__.py
 │   │   ├── application.py   # Application FSM states
-│   │   ├── registration.py  # Registration FSM states
-│   │   └── admin.py         # Admin FSM states
+│   │   └── registration.py  # Registration FSM states
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── translations.py  # Translation utilities
@@ -238,6 +250,12 @@ application/
 │   │   ├── file_handler.py  # File handling utilities
 │   │   └── validators.py    # Input validation utilities
 │   └── main.py              # Main entry point
+├── webadmin/
+│   ├── __init__.py
+│   ├── app.py               # Flask web admin panel
+│   ├── templates/           # HTML templates
+│   └── static/              # Static assets (CSS)
+├── run_admin.py             # Web admin panel entry point
 ├── docker-compose.yml       # Docker Compose configuration
 ├── Dockerfile               # Docker configuration
 ├── requirements.txt         # Python dependencies
@@ -266,7 +284,7 @@ docker-compose up -d
 docker-compose down
 
 # View logs
-docker-compose logs -f bot
+docker-compose logs -f bot webadmin
 
 # Restart bot
 docker-compose restart bot
@@ -281,9 +299,9 @@ To use SQLite instead of PostgreSQL:
    DB_TYPE=sqlite
    ```
 
-2. Start only the bot service:
+2. Start only the bot and web admin services:
    ```bash
-   docker-compose up -d bot
+   docker-compose up -d bot webadmin
    ```
 
 ---
@@ -339,7 +357,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   - [Конфигурация](#конфигурация-1)
 - [Использование](#использование)
   - [Команды пользователя](#команды-пользователя)
-  - [Команды администратора](#команды-администратора)
+  - [Веб-панель администратора](#веб-панель-администратора)
 - [Структура проекта](#структура-проекта)
 - [Docker](#docker-1)
 - [Разработка](#разработка)
@@ -367,6 +385,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Многоязычная поддержка**: Переключение между английским и русским языками с помощью команды `/lang`
 
 ### Возможности для администраторов
+- **Веб-панель администратора**: Flask-панель по адресу `http://localhost:10000`
 - **Управление заявками**: Просмотр всех заявок и изменение их статуса
 - **Управление пользователями**: Просмотр зарегистрированных пользователей
 - **Обновление статуса**: Изменение статуса заявки с добавлением комментариев
@@ -386,6 +405,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Python 3.11+**
 - **Aiogram 3.4** - Современный фреймворк для Telegram ботов
+- **Flask** - Фреймворк веб-панели администратора
 - **SQLAlchemy 2.0** - ORM для работы с базой данных
 - **PostgreSQL** - Продакшен база данных
 - **SQLite** - База данных для разработки
@@ -422,6 +442,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    ```env
    BOT_TOKEN=ваш_токен_телеграм_бота
    ADMIN_ID=ваш_telegram_id
+   ADMIN_PASSWORD=пароль_для_панели_администратора
    DB_TYPE=postgresql
    POSTGRES_PASSWORD=ваш_пароль
    ```
@@ -432,6 +453,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    ```
 
 5. Бот должен быть запущен и готов к использованию!
+
+6. Откройте веб-панель администратора по адресу `http://localhost:10000` и войдите, используя `ADMIN_PASSWORD`.
 
 #### Локальная разработка
 
@@ -455,6 +478,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    python -m bot.main
    ```
 
+6. Запустите веб-панель администратора (в отдельном терминале):
+   ```bash
+   python run_admin.py
+   ```
+   Панель администратора будет доступна по адресу `http://localhost:10000`.
+
 ---
 
 ## ⚙️ Конфигурация
@@ -465,6 +494,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 |------------|----------|----------------------|
 | `BOT_TOKEN` | Токен Telegram бота (обязательно) | - |
 | `ADMIN_ID` | Telegram ID администратора (обязательно) | - |
+| `ADMIN_PASSWORD` | Пароль веб-панели администратора | `admin` |
+| `SECRET_KEY` | Секретный ключ сессий Flask | `change-me` |
 | `DB_TYPE` | Тип базы данных: `sqlite` или `postgresql` | `postgresql` |
 | `POSTGRES_HOST` | Хост PostgreSQL | `localhost` |
 | `POSTGRES_PORT` | Порт PostgreSQL | `5432` |
@@ -499,15 +530,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 | `/my_applications` | Просмотреть свои поданные заявки |
 | `/lang` | Изменить язык (Английский/Русский) |
 
-### Команды администратора
+### Веб-панель администратора
 
-| Команда | Описание |
-|---------|----------|
-| `/admin` | Показать панель администратора |
-| `/applications` | Просмотреть все заявки |
-| `/users` | Просмотреть всех зарегистрированных пользователей |
-| `/set_status` | Изменить статус заявки |
-| `/broadcast` | Отправить сообщение всем пользователям |
+Панель администратора - это Flask веб-приложение, которое работает по адресу `http://localhost:10000`. Она защищена паролем (см. `ADMIN_PASSWORD` в файле `.env`).
+
+| Страница | Описание |
+|----------|----------|
+| Дашборд | Статистика пользователей/заявок, количество по статусам и форма рассылки |
+| `/applications` | Просмотр всех заявок, фильтрация по статусу |
+| `/applications/<id>` | Детали заявки, история статусов и изменение статуса |
+| `/users` | Просмотр всех зарегистрированных пользователей |
 
 ### Процесс создания заявки
 
@@ -522,11 +554,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Управление статусами
 
-Администраторы могут изменять статус заявки с помощью команды `/set_status`:
-1. Вводит ID заявки
-2. Выбирает новый статус из доступных вариантов
-3. Добавляет комментарий (необязательно)
-4. Пользователь получает уведомление об изменении статуса
+Администраторы изменяют статус заявки через веб-панель по адресу `http://localhost:10000/applications/<id>`:
+1. Откройте страницу деталей заявки
+2. Выберите новый статус из выпадающего списка
+3. Добавьте комментарий (необязательно)
+4. Сохраните; пользователь получит уведомление об изменении статуса в Telegram
 
 ---
 
@@ -549,14 +581,12 @@ application/
 │   │   ├── start.py         # Обработчик команды start
 │   │   ├── registration.py  # Обработчики регистрации пользователей
 │   │   ├── application.py   # Обработчики создания заявок
-│   │   ├── admin.py         # Обработчики администратора
 │   │   ├── language.py      # Обработчики смены языка
 │   │   └── common.py        # Общие обработчики
 │   ├── states/
 │   │   ├── __init__.py
 │   │   ├── application.py   # Состояния FSM для заявок
-│   │   ├── registration.py  # Состояния FSM для регистрации
-│   │   └── admin.py         # Состояния FSM для администратора
+│   │   └── registration.py  # Состояния FSM для регистрации
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── translations.py  # Утилиты перевода
@@ -564,6 +594,12 @@ application/
 │   │   ├── file_handler.py  # Утилиты работы с файлами
 │   │   └── validators.py    # Утилиты валидации ввода
 │   └── main.py              # Точка входа
+├── webadmin/
+│   ├── __init__.py
+│   ├── app.py               # Веб-панель администратора Flask
+│   ├── templates/           # HTML шаблоны
+│   └── static/              # Статические файлы (CSS)
+├── run_admin.py             # Точка входа веб-панели администратора
 ├── docker-compose.yml       # Конфигурация Docker Compose
 ├── Dockerfile               # Конфигурация Docker
 ├── requirements.txt         # Зависимости Python
@@ -592,7 +628,7 @@ docker-compose up -d
 docker-compose down
 
 # Просмотр логов
-docker-compose logs -f bot
+docker-compose logs -f bot webadmin
 
 # Перезапуск бота
 docker-compose restart bot
@@ -607,9 +643,9 @@ docker-compose restart bot
    DB_TYPE=sqlite
    ```
 
-2. Запустите только сервис бота:
+2. Запустите сервисы бота и веб-панели:
    ```bash
-   docker-compose up -d bot
+   docker-compose up -d bot webadmin
    ```
 
 ---

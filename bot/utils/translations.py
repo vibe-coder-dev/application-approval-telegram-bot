@@ -27,9 +27,7 @@ def load_translations():
                "/new - Create a new application\n" + \
                "/my_applications - View your applications\n" + \
                "/lang - Change language\n" + \
-               "/help - Show this help message\n\n" + \
-               "For admins:\n" + \
-               "/admin - Admin panel\n",
+               "/help - Show this help message\n",
         "language_changed": "🌐 Language changed to English!",
         "select_language": "🌐 Please select your language:",
         
@@ -80,43 +78,11 @@ def load_translations():
         "status_completed": "Completed",
         "status_rejected": "Rejected",
         
-        # Admin
-        "admin_panel": "🛠️ Admin Panel\n\n" + \
-                      "Available commands:\n" + \
-                      "/applications - View all applications\n" + \
-                      "/users - View all users\n" + \
-                      "/set_status - Change application status\n" + \
-                      "/broadcast - Send message to all users",
-        "admin_only": "❌ This command is only available to administrators.",
-        "all_applications": "📊 All Applications:\n\n",
-        "application_not_found": "❌ Application not found.",
-        "enter_application_id": "🔢 Please enter the application ID:",
-        "enter_new_status": "📝 Please select new status:",
-        "status_changed": "✅ Application status changed to {status}!",
-        "enter_status_notes": "📝 Enter notes for status change (optional):",
-        
-        # Users
-        "all_users": "👥 All Users:\n\n",
-        "user_info": "👤 User #{id}\n\n" + \
-                    "Telegram ID: {telegram_id}\n" + \
-                    "Username: @{username}\n" + \
-                    "Name: {name}\n" + \
-                    "Email: {email}\n" + \
-                    "Phone: {phone}\n" + \
-                    "Language: {language}\n" + \
-                    "Role: {role}\n" + \
-                    "Applications: {app_count}",
-        
-        # Broadcast
-        "broadcast_start": "📢 Enter message to broadcast to all users:",
-        "broadcast_confirm": "📢 Confirm broadcast to {count} users:\n\n{message}\n\nSend? (yes/no)",
-        "broadcast_sent": "✅ Message sent to {count} users!",
-        "broadcast_cancelled": "❌ Broadcast cancelled.",
-        
         # Errors
         "error": "❌ An error occurred: {error}",
         "unknown_command": "❌ Unknown command. Use /help for available commands.",
         "not_registered": "❌ You are not registered. Please use /register command first.",
+        "application_not_found": "❌ Application not found.",
         
         # Buttons
         "btn_yes": "Yes",
@@ -153,9 +119,7 @@ def load_translations():
                "/new - Создать новую заявку\n" + \
                "/my_applications - Просмотреть свои заявки\n" + \
                "/lang - Изменить язык\n" + \
-               "/help - Показать эту справку\n\n" + \
-               "Для администраторов:\n" + \
-               "/admin - Панель администратора\n",
+               "/help - Показать эту справку\n",
         "language_changed": "🌐 Язык изменен на русский!",
         "select_language": "🌐 Пожалуйста, выберите язык:",
         
@@ -206,43 +170,11 @@ def load_translations():
         "status_completed": "Завершена",
         "status_rejected": "Отклонена",
         
-        # Admin
-        "admin_panel": "🛠️ Панель администратора\n\n" + \
-                      "Доступные команды:\n" + \
-                      "/applications - Просмотреть все заявки\n" + \
-                      "/users - Просмотреть всех пользователей\n" + \
-                      "/set_status - Изменить статус заявки\n" + \
-                      "/broadcast - Отправить сообщение всем пользователям",
-        "admin_only": "❌ Эта команда доступна только администраторам.",
-        "all_applications": "📊 Все заявки:\n\n",
-        "application_not_found": "❌ Заявка не найдена.",
-        "enter_application_id": "🔢 Пожалуйста, введите ID заявки:",
-        "enter_new_status": "📝 Пожалуйста, выберите новый статус:",
-        "status_changed": "✅ Статус заявки изменен на {status}!",
-        "enter_status_notes": "📝 Введите комментарий к изменению статуса (необязательно):",
-        
-        # Users
-        "all_users": "👥 Все пользователи:\n\n",
-        "user_info": "👤 Пользователь #{id}\n\n" + \
-                    "Telegram ID: {telegram_id}\n" + \
-                    "Имя пользователя: @{username}\n" + \
-                    "Имя: {name}\n" + \
-                    "Email: {email}\n" + \
-                    "Телефон: {phone}\n" + \
-                    "Язык: {language}\n" + \
-                    "Роль: {role}\n" + \
-                    "Заявок: {app_count}",
-        
-        # Broadcast
-        "broadcast_start": "📢 Введите сообщение для рассылки всем пользователям:",
-        "broadcast_confirm": "📢 Подтвердите рассылку {count} пользователям:\n\n{message}\n\nОтправить? (да/нет)",
-        "broadcast_sent": "✅ Сообщение отправлено {count} пользователям!",
-        "broadcast_cancelled": "❌ Рассылка отменена.",
-        
         # Errors
         "error": "❌ Произошла ошибка: {error}",
         "unknown_command": "❌ Неизвестная команда. Используйте /help для списка команд.",
         "not_registered": "❌ Вы не зарегистрированы. Пожалуйста, используйте команду /register.",
+        "application_not_found": "❌ Заявка не найдена.",
         
         # Buttons
         "btn_yes": "Да",

@@ -5,7 +5,7 @@
 This directory contains comprehensive automated tests for the Application Bot, covering all major components and functionality.
 
 ### Test Statistics
-- **Total Tests**: 63
+- **Total Tests**: 60
 - **Test Files**: 7
 - **Coverage**: Core functionality, utilities, and models
 - **Status**: ✅ All tests passing
@@ -70,15 +70,13 @@ This directory contains comprehensive automated tests for the Application Bot, c
 - **Purpose**: Test keyboard generation utilities
 - **Tests**:
   - Main keyboard (English/Russian)
-  - Admin keyboard
   - Service type keyboard (English/Russian)
-  - Status keyboard (English/Russian)
   - Language keyboard (English/Russian)
   - Confirmation keyboard (English/Russian)
   - File type keyboard
   - Pagination keyboard (first/middle/last/single page)
 
-### 7. `test_settings_simple.py` (10 tests)
+### 7. `test_settings_simple.py` (7 tests)
 - **Purpose**: Test application settings
 - **Tests**:
   - Settings class existence
@@ -166,4 +164,4 @@ Potential areas for additional tests:
 - Performance tests
 - Security tests
 - Error handling and edge cases
-- Admin functionality tests with proper authentication
+- Web admin panel tests (Flask routes, authentication, status changes)
