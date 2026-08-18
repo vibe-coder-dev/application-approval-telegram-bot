@@ -38,13 +38,13 @@ We welcome contributions in many forms:
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/your-username/application-bot.git
+   git clone https://github.com/vibe-coder-dev/application-bot.git
    cd application-bot
    ```
 
 3. Add the upstream remote:
    ```bash
-   git remote add upstream https://github.com/original-owner/application-bot.git
+   git remote add upstream https://github.com/vibe-code-dev/application-bot.git
    ```
 
 ## 🛠️ Development Setup
@@ -227,8 +227,8 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 
 ## 📚 Additional Resources
 
-- [GitHub Issues](https://github.com/your-repo/application-bot/issues)
-- [GitHub Discussions](https://github.com/your-repo/application-bot/discussions)
+- [GitHub Issues](https://github.com/vibe-coder-dev/application-bot/issues)
+- [GitHub Discussions](https://github.com/vibe-coder-dev/application-bot/discussions)
 - [Documentation](README.md)
 
 ## 🙏 Thank You!
