@@ -1,0 +1,32 @@
+# Application Bot Requirements
+# Core dependencies
+aiogram==3.4.1
+aiosqlite==0.19.0
+asyncpg==0.29.0
+SQLAlchemy==2.0.23
+pydantic==2.5.3
+pydantic-settings>=2.0.0
+python-dotenv==1.0.0
+
+# Database
+# aiosqlite for SQLite support
+# asyncpg for PostgreSQL support
+
+# Utilities
+python-multipart==0.0.6
+
+# Test dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Development dependencies
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# Development dependencies (optional)
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+# black==23.11.0
+# flake8==6.1.0

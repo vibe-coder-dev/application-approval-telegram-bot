@@ -1,0 +1,49 @@
+# Git attributes for Application Bot
+
+# Text files
+*.py text
+*.md text
+*.txt text
+*.yml text
+*.yaml text
+*.json text
+*.ini text
+*.cfg text
+
+# Binary files
+*.db binary
+*.sqlite binary
+
+# Line endings
+*.py eol=lf
+*.md eol=lf
+*.txt eol=lf
+*.yml eol=lf
+*.yaml eol=lf
+*.json eol=lf
+*.sh eol=lf
+
+# Language specific
+*.py linguist-language=Python
+*.md linguist-language=Markdown
+*.yml linguist-language=YAML
+
+# Merge drivers
+*.py merge=union
+*.md merge=union
+*.txt merge=union
+
+# Diff drivers
+*.py diff=python
+*.md diff=markdown
+
+# Export ignore
+.idea/ export-ignore
+.vscode/ export-ignore
+__pycache__/ export-ignore
+*.pyc export-ignore
+.DS_Store export-ignore
+Thumbs.db export-ignore
+
+# LFS
+uploads/ filter=lfs diff=lfs merge=lfs -text
